@@ -96,37 +96,50 @@ struct AptumMeaningBackground: View {
         "MOBILITY"
     ]
 
+    private let positions: [CGPoint] = [
+        CGPoint(x: 0.22, y: 0.15),
+        CGPoint(x: 0.70, y: 0.23),
+        CGPoint(x: 0.30, y: 0.72),
+        CGPoint(x: 0.72, y: 0.81),
+        CGPoint(x: 0.50, y: 0.88)
+    ]
+
+    private let sizes: [CGFloat] = [28, 38, 24, 32, 30]
+
     var body: some View {
-        TimelineView(.periodic(from: .now, by: 0.12)) { timeline in
-            let t = timeline.date.timeIntervalSinceReferenceDate
-            ZStack {
-                ForEach(words.indices, id: \.self) { index in
-                    let local = (sin(t * 0.9 + Double(index) * 1.25) + 1) / 2
-                    let opacity = 0.05 + local * 0.19
-                    Text(words[index])
-                        .font(.system(size: index == 1 ? 38 : 32, weight: .black, design: .rounded))
-                        .tracking(3)
-                        .foregroundStyle(.cyan.opacity(opacity))
-                        .blur(radius: local < 0.20 ? 1.8 : 0.4)
-                        .scaleEffect(0.96 + local * 0.08)
-                        .offset(
-                            x: index % 2 == 0 ? -34 : 34,
-                            y: yOffset(for: index)
-                        )
-                        .allowsHitTesting(false)
+        GeometryReader { geo in
+            TimelineView(.periodic(from: .now, by: 0.08)) { timeline in
+                let t = timeline.date.timeIntervalSinceReferenceDate
+
+                ZStack {
+                    ForEach(words.indices, id: \.self) { index in
+                        let phase = t * 0.33 + Double(index) * 1.35
+                        let wave = (sin(phase) + 1) / 2
+                        let opacity = smoothFade(wave) * 0.24
+                        let drift = CGFloat(sin(phase * 0.55)) * 10
+
+                        Text(words[index])
+                            .font(.system(size: sizes[index], weight: .black, design: .rounded))
+                            .tracking(2.6)
+                            .foregroundStyle(.cyan.opacity(opacity))
+                            .scaleEffect(0.96 + wave * 0.05)
+                            .position(
+                                x: geo.size.width * positions[index].x + drift,
+                                y: geo.size.height * positions[index].y
+                            )
+                            .allowsHitTesting(false)
+                            .animation(.easeInOut(duration: 1.2), value: opacity)
+                    }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .clipped()
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 
-    private func yOffset(for index: Int) -> CGFloat {
-        switch index {
-        case 0: return -290
-        case 1: return -210
-        case 2: return 285
-        case 3: return 355
-        default: return 430
-        }
+    private func smoothFade(_ value: Double) -> Double {
+        if value < 0.18 { return 0 }
+        let x = min(max((value - 0.18) / 0.82, 0), 1)
+        return x * x * (3 - 2 * x)
     }
 }

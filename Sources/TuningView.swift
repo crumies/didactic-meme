@@ -155,8 +155,8 @@ struct TuningView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Button("Unlock Tuning") {
-                        SoundManager.shared.playWarningSound(enabled: settings.startupSound) 
-                    showUnlock = true }
+                        SoundManager.shared.playWarningSound(enabled: settings.startupSound)
+                        showUnlock = true }
                     .buttonStyle(.borderedProminent)
                     .tint(.orange)
             }

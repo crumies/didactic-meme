@@ -35,7 +35,6 @@ struct StartupSplash: View {
                 AptumLogoImage()
                     .frame(width: 360, height: 125)
                     .scaleEffect(scale)
-                    .drawingGroup()
                     .shadow(color: .cyan.opacity(glow ? 0.52 : 0.16), radius: glow ? 34 : 10)
 
                 Text("Connecting electric drive")
