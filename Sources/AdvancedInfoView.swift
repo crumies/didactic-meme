@@ -4,17 +4,23 @@ struct AdvancedInfoView: View {
     @EnvironmentObject var ble: DunenBLEManager
 
     private var estimatedWhPerKm: Double {
-        let speed = max(ble.telemetry.speedKmh, 8.0)
-        let powerW = max(ble.telemetry.powerKw * 1000.0, 250.0)
-        let live = powerW / speed
-        // Clamp to sane e-moto range so idle/demo spikes don't look stupid.
-        return min(max(live, 22.0), 95.0)
+        let speed = max(ble.telemetry.speedKmh, 1.0)
+        let powerW = max(ble.telemetry.powerKw * 1000.0, 0.0)
+
+        // More realistic fallback for a 72V 38.4Ah e-moto:
+        // Low speed/cruise usually around 35-45 Wh/km, faster riding more like 55-80 Wh/km.
+        let live = speed > 8 && powerW > 250 ? powerW / speed : 42.0
+        let speedAdjusted = 34.0 + (speed * 0.38)
+
+        // Blend live + speed estimate so idle/demo does not become crazy.
+        return min(max((live * 0.45) + (speedAdjusted * 0.55), 32.0), 85.0)
     }
 
     private var estimatedRangeKm: Double {
-        let usableWh = 72.0 * 38.4 * 0.86
+        // 72V * 38.4Ah ≈ 2765Wh. Use 82% usable to stay realistic.
+        let usableWh = 72.0 * 38.4 * 0.82
         let remainingWh = usableWh * max(0.0, min(100.0, ble.telemetry.batteryPercent)) / 100.0
-        return remainingWh / max(estimatedWhPerKm, 1.0)
+        return min(max(remainingWh / max(estimatedWhPerKm, 1.0), 0), 82)
     }
 
     var body: some View {

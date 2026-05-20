@@ -96,50 +96,52 @@ struct AptumMeaningBackground: View {
         "MOBILITY"
     ]
 
+    // Safe positions: all centered enough so no word gets cut off left/right/bottom.
     private let positions: [CGPoint] = [
-        CGPoint(x: 0.22, y: 0.15),
-        CGPoint(x: 0.70, y: 0.23),
-        CGPoint(x: 0.30, y: 0.72),
-        CGPoint(x: 0.72, y: 0.81),
+        CGPoint(x: 0.50, y: 0.12),
+        CGPoint(x: 0.50, y: 0.21),
+        CGPoint(x: 0.50, y: 0.70),
+        CGPoint(x: 0.50, y: 0.79),
         CGPoint(x: 0.50, y: 0.88)
     ]
 
-    private let sizes: [CGFloat] = [28, 38, 24, 32, 30]
+    private let sizes: [CGFloat] = [25, 34, 23, 29, 27]
 
     var body: some View {
         GeometryReader { geo in
-            TimelineView(.periodic(from: .now, by: 0.08)) { timeline in
+            TimelineView(.periodic(from: .now, by: 0.05)) { timeline in
                 let t = timeline.date.timeIntervalSinceReferenceDate
 
                 ZStack {
                     ForEach(words.indices, id: \.self) { index in
-                        let phase = t * 0.33 + Double(index) * 1.35
+                        // Faster than before, but still smooth.
+                        let phase = t * 0.72 + Double(index) * 0.72
                         let wave = (sin(phase) + 1) / 2
-                        let opacity = smoothFade(wave) * 0.24
-                        let drift = CGFloat(sin(phase * 0.55)) * 10
+                        let opacity = smoothFade(wave) * 0.23
+                        let drift = CGFloat(sin(phase * 0.65)) * 4
 
                         Text(words[index])
                             .font(.system(size: sizes[index], weight: .black, design: .rounded))
-                            .tracking(2.6)
+                            .tracking(2.1)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.65)
                             .foregroundStyle(.cyan.opacity(opacity))
-                            .scaleEffect(0.96 + wave * 0.05)
+                            .scaleEffect(0.97 + wave * 0.035)
                             .position(
-                                x: geo.size.width * positions[index].x + drift,
-                                y: geo.size.height * positions[index].y
+                                x: min(max(geo.size.width * positions[index].x + drift, 80), geo.size.width - 80),
+                                y: min(max(geo.size.height * positions[index].y, 46), geo.size.height - 54)
                             )
                             .allowsHitTesting(false)
-                            .animation(.easeInOut(duration: 1.2), value: opacity)
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .clipped()
             }
         }
     }
 
     private func smoothFade(_ value: Double) -> Double {
-        if value < 0.18 { return 0 }
-        let x = min(max((value - 0.18) / 0.82, 0), 1)
+        if value < 0.12 { return 0 }
+        let x = min(max((value - 0.12) / 0.88, 0), 1)
         return x * x * (3 - 2 * x)
     }
 }
