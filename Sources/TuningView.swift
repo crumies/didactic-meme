@@ -154,7 +154,8 @@ struct TuningView: View {
                 Text("Press unlock to access safer toggle controls.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                Button("Unlock Tuning") { showUnlock = true }
+                Button("Unlock Tuning") {
+                        SoundManager.shared.playWarningSound(enabled: settings.startupSound) showUnlock = true }
                     .buttonStyle(.borderedProminent)
                     .tint(.orange)
             }

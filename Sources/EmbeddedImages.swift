@@ -13,11 +13,11 @@ private enum EmbeddedImages {
 
 struct AptumLogoImage: View {
     var body: some View {
-        if let image = EmbeddedImages.uiImage(EmbeddedImages.aptumLogo) {
-            Image(uiImage: image).resizable().scaledToFit()
-        } else {
-            Image("AptumLogo").resizable().scaledToFit()
-        }
+        Image("AptumLogo")
+            .resizable()
+            .interpolation(.high)
+            .antialiased(true)
+            .scaledToFit()
     }
 }
 

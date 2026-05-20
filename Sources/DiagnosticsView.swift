@@ -33,15 +33,18 @@ struct DiagnosticsView: View {
                     VStack(spacing: 12) {
                         row("Settings loaded", tuning.didLoadFromController ? "Yes" : "No")
                         row("Tuning unlocked", settings.expertTuningUnlocked ? "Yes" : "No")
-                        row("Demo mode", ble.isDemoMode ? "On" : "Off")
+                        if ble.isDemoMode {
+                            row("Demo mode", "On")
+                        }
                         row("Saved devices", "\(ble.savedDevices.count)")
-                        row("Developer", settings.developerUnlocked ? "Unlocked" : "Locked")
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
                 GlassCard {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Diagnostic History").font(.headline)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                         if ble.diagnosticEvents.isEmpty {
                             Text("No events yet").font(.caption).foregroundStyle(.secondary)
                         } else {
@@ -58,6 +61,7 @@ struct DiagnosticsView: View {
                             }
                         }
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
                 if settings.showRawPackets {
@@ -83,6 +87,7 @@ struct DiagnosticsView: View {
                 }
             }
             .padding(.horizontal, 18)
+            .frame(maxWidth: .infinity)
             .padding(.top, 10)
             .padding(.bottom, 82)
         }

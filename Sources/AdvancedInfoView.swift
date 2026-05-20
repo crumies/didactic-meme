@@ -3,6 +3,20 @@ import SwiftUI
 struct AdvancedInfoView: View {
     @EnvironmentObject var ble: DunenBLEManager
 
+    private var estimatedWhPerKm: Double {
+        let speed = max(ble.telemetry.speedKmh, 8.0)
+        let powerW = max(ble.telemetry.powerKw * 1000.0, 250.0)
+        let live = powerW / speed
+        // Clamp to sane e-moto range so idle/demo spikes don't look stupid.
+        return min(max(live, 22.0), 95.0)
+    }
+
+    private var estimatedRangeKm: Double {
+        let usableWh = 72.0 * 38.4 * 0.86
+        let remainingWh = usableWh * max(0.0, min(100.0, ble.telemetry.batteryPercent)) / 100.0
+        return remainingWh / max(estimatedWhPerKm, 1.0)
+    }
+
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
@@ -35,6 +49,8 @@ struct AdvancedInfoView: View {
                         row("Voltage Sag", String(format: "%.2f V", ble.telemetry.voltageSag))
                         row("Motor Temp", String(format: "%.1f °C", ble.telemetry.motorTemp))
                         row("Controller Temp", String(format: "%.1f °C", ble.telemetry.controllerTemp))
+                        row("Wh/km Est.", String(format: "%.1f Wh/km", estimatedWhPerKm))
+                        row("Range Est.", String(format: "%.0f km", estimatedRangeKm))
                         heatBar(value: ble.telemetry.controllerTemp)
                     }
                 }

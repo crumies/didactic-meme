@@ -15,7 +15,7 @@ final class SoundManager {
 
     func playScanningSound(enabled: Bool) {
         guard enabled else { return }
-        play("scanning", ext: "mp3", fallbackName: nil, fallbackExt: nil, fallbackID: 1020)
+        play("scanning", ext: "mp3", fallbackName: "scan_backup", fallbackExt: "wav", fallbackID: 1020)
     }
 
     func playConnectSound(enabled: Bool) {

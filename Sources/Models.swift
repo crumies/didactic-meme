@@ -85,7 +85,6 @@ final class AppSettings: ObservableObject {
     @AppStorage("speedUnit") var speedUnitRaw: String = SpeedUnit.kmh.rawValue
     @AppStorage("appearanceMode") var appearanceRaw: String = AppearanceMode.system.rawValue
     @AppStorage("startupAnimation") var startupAnimation: Bool = true
-    @AppStorage("tireStartupAnimation") var tireStartupAnimation: Bool = false
     @AppStorage("showRawPackets") var showRawPackets: Bool = true
     @AppStorage("expertTuningUnlocked") var expertTuningUnlocked: Bool = false
     @Published var developerUnlocked: Bool = false

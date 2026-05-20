@@ -233,7 +233,6 @@ struct DeveloperOptionsView: View {
 
                 Section("Demo Control") {
                     Toggle("App controls demo automatically", isOn: $settings.demoAutoInput)
-                    Toggle("Tire startup animation", isOn: $settings.tireStartupAnimation).tint(.cyan)
                     Text(settings.demoAutoInput ? "Demo values move automatically." : "Manual overlay can control demo input when developer mode is enabled.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
