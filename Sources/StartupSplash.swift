@@ -95,7 +95,21 @@ struct StartupSplash: View {
                             .offset(x: CGFloat(-78 - i * 30), y: CGFloat(50 - i * 8))
                     }
 
-                    SketchEMoto(wheelSpin: wheelSpin)
+                    Image("bike_outline")
+                        .resizable()
+                        .renderingMode(.template)
+                        .foregroundStyle(.white.opacity(0.92))
+                        .scaledToFit()
+                        .frame(width: 240, height: 120)
+                        .rotationEffect(.degrees(1))
+                        .overlay(
+                            Image("bike_outline")
+                                .resizable()
+                                .renderingMode(.template)
+                                .foregroundStyle(.cyan.opacity(0.45))
+                                .scaledToFit()
+                                .blur(radius: 2)
+                        )
                         .frame(width: 250, height: 145)
                         .offset(x: bikeDrive ? 165 : -155, y: 6)
                         .shadow(color: .cyan.opacity(0.35), radius: 18)

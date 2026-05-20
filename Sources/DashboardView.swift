@@ -348,74 +348,83 @@ struct RPMArc: View {
         }
     }
 
-    // Starts early so it is visible on real road speeds, not only wheel-in-air max.
     var redlineStartRPM: Double {
         switch mode {
-        case .eco: return 1200
-        case .xc: return 1900
-        case .sports: return 2800
-        case .reverse: return 45
-        case .park: return 380
+        case .eco: return 1000
+        case .xc: return 1700
+        case .sports: return 2500
+        case .reverse: return 40
+        case .park: return 350
         }
     }
 
-    // Final red / black appears before the real max RPM.
     var fullRedlineRPM: Double {
         switch mode {
-        case .eco: return max(redlineStartRPM + 1, modeLimitRPM - 900)
-        case .xc: return max(redlineStartRPM + 1, modeLimitRPM - 950)
-        case .sports: return max(redlineStartRPM + 1, modeLimitRPM - 950)
-        case .reverse: return max(redlineStartRPM + 1, modeLimitRPM - 150)
-        case .park: return max(redlineStartRPM + 1, modeLimitRPM - 300)
+        case .eco: return 3100
+        case .xc: return 5000
+        case .sports: return 7100
+        case .reverse: return 220
+        case .park: return 700
         }
     }
 
-    var currentRPM: Double { min(max(Double(rpm), 0), displayMaxRPM) }
-    var progress: Double { min(max(currentRPM / displayMaxRPM, 0), 0.985) }
-    var redlineStartProgress: Double { min(max(redlineStartRPM / displayMaxRPM, 0), 0.985) }
-    var fullRedlineProgress: Double { min(max(fullRedlineRPM / displayMaxRPM, 0), 0.985) }
+    var progress: Double {
+        min(max(Double(rpm) / displayMaxRPM, 0), 0.985)
+    }
 
-    var baseColor: Color {
+    var colors: [Color] {
         switch mode {
-        case .eco: return .green
-        case .xc: return .cyan
-        case .sports: return .orange
-        case .reverse: return .purple
-        case .park: return .white
+        case .eco:
+            return [.green, .green, .yellow, .orange, .red]
+        case .xc:
+            return [.cyan, .cyan, .blue, .purple, .red]
+        case .sports:
+            return [.orange, .orange, .red, .red, .black]
+        case .reverse:
+            return [.purple, .purple, .pink, .red]
+        case .park:
+            return [.white]
         }
     }
 
-    var midColor: Color {
+    var stops: [Gradient.Stop] {
+        let start = redlineStartRPM / displayMaxRPM
+        let full = fullRedlineRPM / displayMaxRPM
+
         switch mode {
-        case .eco: return .yellow
-        case .xc: return .blue
-        case .sports: return .red
-        case .reverse: return .pink
-        case .park: return .white.opacity(0.8)
-        }
-    }
-
-    var endColor: Color {
-        switch mode {
-        case .sports: return .black
-        case .park: return .white.opacity(0.65)
-        default: return .red
-        }
-    }
-
-    var redlineAmount: Double {
-        guard currentRPM > redlineStartRPM else { return 0 }
-        return min(max((currentRPM - redlineStartRPM) / max(fullRedlineRPM - redlineStartRPM, 1), 0), 1)
-    }
-
-    var activeRedlineColors: [Color] {
-        // Start with baseColor twice so the overlay fades in invisibly instead of spawning.
-        if redlineAmount < 0.30 {
-            return [baseColor, baseColor, baseColor, midColor.opacity(0.55)]
-        } else if redlineAmount < 0.65 {
-            return [baseColor, baseColor, midColor, .orange, .red.opacity(0.85)]
-        } else {
-            return [baseColor, midColor, .red, endColor]
+        case .eco:
+            return [
+                .init(color: .green, location: 0),
+                .init(color: .green, location: start),
+                .init(color: .yellow, location: start + ((full-start)*0.45)),
+                .init(color: .orange, location: start + ((full-start)*0.72)),
+                .init(color: .red, location: full)
+            ]
+        case .xc:
+            return [
+                .init(color: .cyan, location: 0),
+                .init(color: .cyan, location: start),
+                .init(color: .blue, location: start + ((full-start)*0.4)),
+                .init(color: .purple, location: start + ((full-start)*0.7)),
+                .init(color: .red, location: full)
+            ]
+        case .sports:
+            return [
+                .init(color: .orange, location: 0),
+                .init(color: .orange, location: start),
+                .init(color: .red, location: start + ((full-start)*0.45)),
+                .init(color: .red, location: start + ((full-start)*0.72)),
+                .init(color: .black, location: full)
+            ]
+        case .reverse:
+            return [
+                .init(color: .purple, location: 0),
+                .init(color: .purple, location: start),
+                .init(color: .pink, location: start + ((full-start)*0.5)),
+                .init(color: .red, location: full)
+            ]
+        case .park:
+            return [.init(color: .white, location: 1)]
         }
     }
 
@@ -426,34 +435,14 @@ struct RPMArc: View {
                 .stroke(.white.opacity(0.10), style: StrokeStyle(lineWidth: 16, lineCap: .round))
                 .rotationEffect(.degrees(90))
 
-            // Draw the whole filled arc in base color first.
-            // This hides the redline overlay start edge and removes the "spawn in" look.
             Circle()
                 .trim(from: startTrim, to: startTrim + progress * totalTrim)
-                .stroke(baseColor, style: StrokeStyle(lineWidth: 16, lineCap: .round))
+                .stroke(
+                    AngularGradient(gradient: Gradient(stops: stops), center: .center),
+                    style: StrokeStyle(lineWidth: 16, lineCap: .round)
+                )
                 .rotationEffect(.degrees(90))
-                .shadow(color: baseColor.opacity(0.35), radius: 10)
-
-            if progress > redlineStartProgress {
-                let gradientEnd = min(progress, fullRedlineProgress)
-
-                Circle()
-                    .trim(from: startTrim + redlineStartProgress * totalTrim, to: startTrim + gradientEnd * totalTrim)
-                    .stroke(
-                        LinearGradient(colors: activeRedlineColors, startPoint: .leading, endPoint: .trailing),
-                        style: StrokeStyle(lineWidth: 16, lineCap: .round)
-                    )
-                    .rotationEffect(.degrees(90))
-                    .shadow(color: endColor.opacity(0.35), radius: 11)
-
-                if progress > fullRedlineProgress {
-                    Circle()
-                        .trim(from: startTrim + fullRedlineProgress * totalTrim, to: startTrim + progress * totalTrim)
-                        .stroke(endColor, style: StrokeStyle(lineWidth: 16, lineCap: .round))
-                        .rotationEffect(.degrees(90))
-                        .shadow(color: endColor.opacity(0.35), radius: 11)
-                }
-            }
+                .shadow(color: colors.first?.opacity(0.35) ?? .clear, radius: 10)
         }
     }
 }

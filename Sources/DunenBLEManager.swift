@@ -241,7 +241,7 @@ final class DunenBLEManager: NSObject, ObservableObject {
             case .eco: return 68
             case .xc: return 102
             case .sports: return 136
-            case .reverse: return 9
+            case .reverse: return 6
             case .park: return 0
             }
         }()
@@ -257,7 +257,7 @@ final class DunenBLEManager: NSObject, ObservableObject {
             case .eco: return 4000
             case .xc: return 6000
             case .sports: return 8000
-            case .reverse: return 350
+            case .reverse: return 260
             case .park: return 0
             }
         }()
